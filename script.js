@@ -43,10 +43,12 @@ const timer = setInterval(updateCountdown, 1000);
 
 // --- Nhạc nền (YouTube, tự phát) ---
 // Trình duyệt chặn autoplay có tiếng, nên phát ở chế độ mute ngay khi tải
-// trang, rồi tự bật tiếng ngay khi người dùng có tương tác đầu tiên
-// (chạm/cuộn/click bất kỳ đâu) — với thiệp mời, việc này gần như tức thì.
+// trang, rồi tự bật tiếng ngay khi người dùng có tương tác đầu tiên.
+// Chỉ dùng các sự kiện được tính là "user gesture" thật (click/touch/phím) —
+// "scroll" không được trình duyệt công nhận để mở khóa autoplay có tiếng,
+// nên lệnh unMute() sẽ bị bỏ qua âm thầm nếu dùng scroll làm trigger.
 const MUSIC_VIDEO_ID = "OWFBxcY9_SY";
-const INTERACTION_EVENTS = ["click", "touchstart", "keydown", "scroll"];
+const INTERACTION_EVENTS = ["click", "touchstart", "keydown"];
 
 let ytPlayer = null;
 let playerReady = false;
