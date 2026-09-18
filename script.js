@@ -50,6 +50,11 @@ const timer = setInterval(updateCountdown, 1000);
 // người dùng chủ động, không bị chặn ngầm như kiểu "mute trước rồi unmute
 // sau". Gộp mọi loại sự kiện tương tác phổ biến trên cả desktop và mobile.
 const MUSIC_VIDEO_ID = "OWFBxcY9_SY";
+// "wheel" (cuộn chuột desktop) ĐÃ bị bỏ khỏi danh sách này: nó không phải
+// user-activation gesture hợp lệ để mở khóa audio, nhưng vì thường là tương
+// tác ĐẦU TIÊN trên trang, nó vẫn tiêu tốn "lượt thử duy nhất" (musicStarted
+// bị set true, mọi listener khác bị gỡ) trong khi lệnh phát bị chặn ngầm —
+// kết quả là nhạc không bao giờ tự bật được nữa dù người dùng click sau đó.
 const INTERACTION_EVENTS = [
   "click",
   "mousedown",
@@ -57,11 +62,6 @@ const INTERACTION_EVENTS = [
   "touchstart",
   "touchend",
   "keydown",
-  // "wheel" (cuộn chuột desktop) KHÔNG được browser tính là user-activation
-  // gesture hợp lệ — thử vẫn thêm vào theo yêu cầu, nhưng lệnh playVideo()
-  // unmuted gọi từ đây có thể bị trình duyệt âm thầm chặn tùy chính sách
-  // từng máy/phiên bản, không đảm bảo hoạt động 100%.
-  "wheel",
 ];
 
 const musicToggleBtn = document.getElementById("music-toggle");
