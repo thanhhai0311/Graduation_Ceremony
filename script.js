@@ -1,5 +1,5 @@
-// Ngày giờ diễn ra lễ tốt nghiệp: 15:00, Thứ Bảy 26/09/2026
-const EVENT_DATE = new Date("2026-09-26T15:00:00+07:00").getTime();
+// Đón tiếp từ 13:00, Thứ Bảy 26/09/2026 (theo lịch trình chính thức)
+const EVENT_DATE = new Date("2026-09-26T13:00:00+07:00").getTime();
 
 const daysEl = document.getElementById("days");
 const hoursEl = document.getElementById("hours");
