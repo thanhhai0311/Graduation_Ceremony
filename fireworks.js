@@ -7,9 +7,19 @@
     "(prefers-reduced-motion: reduce)"
   ).matches;
 
-  const COLORS = ["#d4af37", "#f3d98b", "#faf6ec", "#e8935a", "#8fb8de"];
+  const COLORS = [
+    "#ffd700", // gold
+    "#ff4d4d", // red
+    "#4dc9ff", // blue
+    "#4dff88", // green
+    "#c14dff", // purple
+    "#ff4dc4", // pink
+    "#ff9d4d", // orange
+    "#4dfff0", // cyan
+    "#ffffff", // white
+  ];
   const GRAVITY = 0.045;
-  const LAUNCH_INTERVAL_MS = 1500;
+  const LAUNCH_INTERVAL_MS = 900;
 
   let width = 0;
   let height = 0;
@@ -44,10 +54,10 @@
   }
 
   function explode(x, y, color) {
-    const count = 36;
+    const count = 80;
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 * i) / count + randomBetween(-0.12, 0.12);
-      const speed = randomBetween(1.4, 3.8);
+      const speed = randomBetween(2.5, 6.5);
       particles.push({
         x,
         y,
@@ -55,20 +65,23 @@
         vy: Math.sin(angle) * speed,
         alpha: 1,
         color,
-        size: randomBetween(1.4, 2.4),
+        size: randomBetween(2.5, 4.5),
       });
     }
   }
 
   function step() {
     ctx.clearRect(0, 0, width, height);
+    ctx.globalCompositeOperation = "lighter";
 
     for (let i = rockets.length - 1; i >= 0; i--) {
       const rocket = rockets[i];
       rocket.y -= rocket.speed;
 
+      ctx.shadowColor = rocket.color;
+      ctx.shadowBlur = 16;
       ctx.beginPath();
-      ctx.arc(rocket.x, rocket.y, 2, 0, Math.PI * 2);
+      ctx.arc(rocket.x, rocket.y, 3, 0, Math.PI * 2);
       ctx.fillStyle = rocket.color;
       ctx.fill();
 
@@ -83,7 +96,7 @@
       p.vy += GRAVITY;
       p.x += p.vx;
       p.y += p.vy;
-      p.alpha -= 0.012;
+      p.alpha -= 0.011;
 
       if (p.alpha <= 0) {
         particles.splice(i, 1);
@@ -91,12 +104,17 @@
       }
 
       ctx.globalAlpha = Math.max(p.alpha, 0);
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 18;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       ctx.fillStyle = p.color;
       ctx.fill();
     }
+
     ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+    ctx.globalCompositeOperation = "source-over";
 
     animationId = requestAnimationFrame(step);
   }
@@ -104,9 +122,11 @@
   function start() {
     if (animationId !== null) return;
     step();
+    launchRocket();
     launchTimer = setInterval(() => {
       launchRocket();
-      if (Math.random() < 0.35) launchRocket();
+      if (Math.random() < 0.6) launchRocket();
+      if (Math.random() < 0.25) launchRocket();
     }, LAUNCH_INTERVAL_MS);
   }
 
