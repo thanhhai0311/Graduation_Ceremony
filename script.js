@@ -41,64 +41,73 @@ function updateCountdown() {
 updateCountdown();
 const timer = setInterval(updateCountdown, 1000);
 
-// --- Nhạc nền (YouTube, tự phát) ---
-// Trình duyệt chặn autoplay có tiếng, nên phát ở chế độ mute ngay khi tải
-// trang, rồi tự bật tiếng ngay khi người dùng có tương tác đầu tiên.
-// Chỉ dùng các sự kiện được tính là "user gesture" thật (click/touch/phím) —
-// "scroll" không được trình duyệt công nhận để mở khóa autoplay có tiếng,
-// nên lệnh unMute() sẽ bị bỏ qua âm thầm nếu dùng scroll làm trigger.
+// --- Nhạc nền (YouTube) ---
+// Không trình duyệt nào cho phát audio có tiếng khi trang vừa mở, chưa có
+// tương tác gì — đây là giới hạn cứng của nền tảng (autoplay policy), không
+// phải lỗi code. Cách đáng tin cậy nhất: KHÔNG tạo player lúc tải trang, mà
+// chỉ tạo + yêu cầu play (autoplay:1, mute:0) ngay bên trong handler của
+// tương tác thật đầu tiên — nhờ vậy trình duyệt luôn nhận call này là do
+// người dùng chủ động, không bị chặn ngầm như kiểu "mute trước rồi unmute
+// sau". Gộp mọi loại sự kiện tương tác phổ biến trên cả desktop và mobile.
 const MUSIC_VIDEO_ID = "OWFBxcY9_SY";
-const INTERACTION_EVENTS = ["click", "touchstart", "keydown"];
+const INTERACTION_EVENTS = [
+  "click",
+  "mousedown",
+  "pointerdown",
+  "touchstart",
+  "touchend",
+  "keydown",
+];
 
-let ytPlayer = null;
-let playerReady = false;
-let userInteracted = false;
-let hasUnmuted = false;
+let apiReady = false;
+let musicStarted = false;
+let pendingStart = false;
 
-function tryUnmute() {
-  if (hasUnmuted || !playerReady || !userInteracted) return;
-  ytPlayer.unMute();
-  ytPlayer.playVideo();
-  hasUnmuted = true;
-}
-
-function onYouTubeIframeAPIReady() {
-  ytPlayer = new YT.Player("yt-player", {
+function createPlayer() {
+  new YT.Player("yt-player", {
     height: "0",
     width: "0",
     videoId: MUSIC_VIDEO_ID,
     playerVars: {
       autoplay: 1,
-      mute: 1,
+      mute: 0,
       controls: 0,
       loop: 1,
       playlist: MUSIC_VIDEO_ID,
       playsinline: 1,
     },
     events: {
-      onReady: (event) => {
-        playerReady = true;
-        event.target.playVideo();
-        // Người dùng có thể đã tương tác trước khi player load xong
-        tryUnmute();
-      },
+      onReady: (event) => event.target.playVideo(),
       onError: (event) => {
         console.error("Không phát được nhạc nền, mã lỗi YouTube:", event.data);
       },
     },
   });
 }
-// YouTube IFrame API gọi hàm global này ngay khi script iframe_api tải xong
-window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
 
-function handleFirstInteraction() {
-  userInteracted = true;
-  tryUnmute();
+// YouTube IFrame API gọi hàm global này ngay khi script iframe_api tải xong
+window.onYouTubeIframeAPIReady = () => {
+  apiReady = true;
+  if (pendingStart) createPlayer();
+};
+
+function startMusic() {
+  if (musicStarted) return;
+  musicStarted = true;
+
   INTERACTION_EVENTS.forEach((eventName) => {
-    window.removeEventListener(eventName, handleFirstInteraction);
+    window.removeEventListener(eventName, startMusic);
   });
+
+  if (apiReady) {
+    createPlayer();
+  } else {
+    // API script (tải qua network) có thể chưa kịp sẵn sàng — tạo player
+    // ngay khi nó báo ready, vẫn nằm trong "chuỗi" của lần tương tác này.
+    pendingStart = true;
+  }
 }
 
 INTERACTION_EVENTS.forEach((eventName) => {
-  window.addEventListener(eventName, handleFirstInteraction, { passive: true });
+  window.addEventListener(eventName, startMusic, { passive: true });
 });
