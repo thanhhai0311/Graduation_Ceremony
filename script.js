@@ -57,6 +57,11 @@ const INTERACTION_EVENTS = [
   "touchstart",
   "touchend",
   "keydown",
+  // "wheel" (cuộn chuột desktop) KHÔNG được browser tính là user-activation
+  // gesture hợp lệ — thử vẫn thêm vào theo yêu cầu, nhưng lệnh playVideo()
+  // unmuted gọi từ đây có thể bị trình duyệt âm thầm chặn tùy chính sách
+  // từng máy/phiên bản, không đảm bảo hoạt động 100%.
+  "wheel",
 ];
 
 const musicToggleBtn = document.getElementById("music-toggle");
