@@ -41,11 +41,13 @@ function updateCountdown() {
 updateCountdown();
 const timer = setInterval(updateCountdown, 1000);
 
-// --- Nhạc nền (YouTube) ---
+// --- Nhạc nền (YouTube, tự phát) ---
+// Trình duyệt chặn autoplay có tiếng, nên phát ở chế độ mute ngay khi tải
+// trang, rồi tự bật tiếng ngay khi người dùng có tương tác đầu tiên
+// (chạm/cuộn/click bất kỳ đâu) — với thiệp mời, việc này gần như tức thì.
 const MUSIC_VIDEO_ID = "OWFBxcY9_SY";
-const musicToggle = document.getElementById("music-toggle");
 let ytPlayer = null;
-let isPlaying = false;
+let hasUnmuted = false;
 
 function onYouTubeIframeAPIReady() {
   ytPlayer = new YT.Player("yt-player", {
@@ -53,14 +55,15 @@ function onYouTubeIframeAPIReady() {
     width: "0",
     videoId: MUSIC_VIDEO_ID,
     playerVars: {
-      autoplay: 0,
+      autoplay: 1,
+      mute: 1,
       controls: 0,
       loop: 1,
       playlist: MUSIC_VIDEO_ID,
     },
     events: {
-      onReady: () => {
-        musicToggle.disabled = false;
+      onReady: (event) => {
+        event.target.playVideo();
       },
     },
   });
@@ -68,16 +71,13 @@ function onYouTubeIframeAPIReady() {
 // YouTube IFrame API calls this global function once loaded
 window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
 
-musicToggle.addEventListener("click", () => {
-  if (!ytPlayer || typeof ytPlayer.playVideo !== "function") return;
+function unmuteMusic() {
+  if (hasUnmuted || !ytPlayer || typeof ytPlayer.unMute !== "function") return;
+  ytPlayer.unMute();
+  ytPlayer.playVideo();
+  hasUnmuted = true;
+}
 
-  if (isPlaying) {
-    ytPlayer.pauseVideo();
-  } else {
-    ytPlayer.playVideo();
-  }
-  isPlaying = !isPlaying;
-  musicToggle.classList.toggle("playing", isPlaying);
-  musicToggle.setAttribute("aria-pressed", String(isPlaying));
-  musicToggle.setAttribute("aria-label", isPlaying ? "Tắt nhạc nền" : "Bật nhạc nền");
+["click", "touchstart", "keydown", "scroll"].forEach((eventName) => {
+  window.addEventListener(eventName, unmuteMusic, { once: true, passive: true });
 });
