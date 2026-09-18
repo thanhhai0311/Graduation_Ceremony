@@ -40,3 +40,44 @@ function updateCountdown() {
 
 updateCountdown();
 const timer = setInterval(updateCountdown, 1000);
+
+// --- Nhạc nền (YouTube) ---
+const MUSIC_VIDEO_ID = "OWFBxcY9_SY";
+const musicToggle = document.getElementById("music-toggle");
+let ytPlayer = null;
+let isPlaying = false;
+
+function onYouTubeIframeAPIReady() {
+  ytPlayer = new YT.Player("yt-player", {
+    height: "0",
+    width: "0",
+    videoId: MUSIC_VIDEO_ID,
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      loop: 1,
+      playlist: MUSIC_VIDEO_ID,
+    },
+    events: {
+      onReady: () => {
+        musicToggle.disabled = false;
+      },
+    },
+  });
+}
+// YouTube IFrame API calls this global function once loaded
+window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+musicToggle.addEventListener("click", () => {
+  if (!ytPlayer || typeof ytPlayer.playVideo !== "function") return;
+
+  if (isPlaying) {
+    ytPlayer.pauseVideo();
+  } else {
+    ytPlayer.playVideo();
+  }
+  isPlaying = !isPlaying;
+  musicToggle.classList.toggle("playing", isPlaying);
+  musicToggle.setAttribute("aria-pressed", String(isPlaying));
+  musicToggle.setAttribute("aria-label", isPlaying ? "Tắt nhạc nền" : "Bật nhạc nền");
+});
