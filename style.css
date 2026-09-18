@@ -27,6 +27,15 @@ body {
   overflow-x: hidden;
 }
 
+/* --- Fireworks --- */
+#fireworks-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  display: block;
+}
+
 /* --- Decorative floating background --- */
 .bg-decor {
   position: fixed;
