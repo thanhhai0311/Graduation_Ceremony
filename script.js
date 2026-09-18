@@ -46,37 +46,37 @@ const timer = setInterval(updateCountdown, 1000);
 // tương tác gì — đây là giới hạn cứng của nền tảng (autoplay policy), không
 // phải lỗi code. Cách đáng tin cậy nhất: KHÔNG tạo player lúc tải trang, mà
 // chỉ tạo + yêu cầu play (autoplay:1, mute:0) ngay bên trong handler của
-// tương tác thật đầu tiên — nhờ vậy trình duyệt luôn nhận call này là do
-// người dùng chủ động, không bị chặn ngầm như kiểu "mute trước rồi unmute
-// sau". Gộp mọi loại sự kiện tương tác phổ biến trên cả desktop và mobile.
+// tương tác thật đầu tiên.
+//
+// Tách 2 nhóm sự kiện:
+// - STRONG_EVENTS: gesture được browser công nhận chính thức (click/chạm/
+//   phím) — đáng tin cậy, chỉ cần dùng 1 lần rồi gỡ hết listener.
+// - WEAK_EVENTS ("wheel"): cuộn chuột KHÔNG phải gesture hợp lệ, lệnh phát
+//   có thể bị chặn ngầm. Vì vậy nó CHỈ được phép "thử" phát (và có thể thử
+//   lại nhiều lần khi người dùng tiếp tục cuộn) — không được phép tiêu tốn
+//   cơ hội của nhóm STRONG_EVENTS bằng cách gỡ listener của nhóm đó. Đây là
+//   lỗi ở phiên bản trước: gộp chung 1 nhóm khiến wheel "dùng hết lượt" rồi
+//   im luôn dù có click/chạm thật sau đó.
 const MUSIC_VIDEO_ID = "OWFBxcY9_SY";
-// "wheel" (cuộn chuột desktop) ĐÃ bị bỏ khỏi danh sách này: nó không phải
-// user-activation gesture hợp lệ để mở khóa audio, nhưng vì thường là tương
-// tác ĐẦU TIÊN trên trang, nó vẫn tiêu tốn "lượt thử duy nhất" (musicStarted
-// bị set true, mọi listener khác bị gỡ) trong khi lệnh phát bị chặn ngầm —
-// kết quả là nhạc không bao giờ tự bật được nữa dù người dùng click sau đó.
-const INTERACTION_EVENTS = [
-  "click",
-  "mousedown",
-  "pointerdown",
-  "touchstart",
-  "touchend",
-  "keydown",
-];
+const STRONG_EVENTS = ["click", "mousedown", "pointerdown", "touchstart", "touchend", "keydown"];
+const WEAK_EVENTS = ["wheel"];
+const WEAK_RETRY_THROTTLE_MS = 500;
 
 const musicToggleBtn = document.getElementById("music-toggle");
 
 let ytPlayer = null;
 let apiReady = false;
-let musicStarted = false;
+let playerCreated = false;
 let pendingStart = false;
 let isPlaying = false;
+let lastWeakAttempt = 0;
 
 function setPlayingUI(playing) {
   isPlaying = playing;
   musicToggleBtn.classList.toggle("playing", playing);
   musicToggleBtn.setAttribute("aria-pressed", String(playing));
   musicToggleBtn.setAttribute("aria-label", playing ? "Tạm dừng nhạc nền" : "Phát nhạc nền");
+  if (playing) removeAllTriggers();
 }
 
 function createPlayer() {
@@ -113,33 +113,56 @@ window.onYouTubeIframeAPIReady = () => {
   if (pendingStart) createPlayer();
 };
 
-function startMusic() {
-  if (musicStarted) return;
-  musicStarted = true;
-
-  INTERACTION_EVENTS.forEach((eventName) => {
-    window.removeEventListener(eventName, startMusic);
-  });
-
-  if (apiReady) {
-    createPlayer();
-  } else {
-    // API script (tải qua network) có thể chưa kịp sẵn sàng — tạo player
-    // ngay khi nó báo ready, vẫn nằm trong "chuỗi" của lần tương tác này.
-    pendingStart = true;
+// Gọi ở mọi lần trigger (strong lẫn weak): tạo player nếu chưa có, hoặc thử
+// playVideo() lại nếu player đã tồn tại nhưng chưa thực sự phát được.
+function retryPlay() {
+  if (isPlaying) return;
+  if (!playerCreated) {
+    playerCreated = true;
+    if (apiReady) {
+      createPlayer();
+    } else {
+      // API script (tải qua network) có thể chưa kịp sẵn sàng — tạo player
+      // ngay khi nó báo ready, vẫn nằm trong "chuỗi" của lần tương tác này.
+      pendingStart = true;
+    }
+    return;
+  }
+  if (ytPlayer && typeof ytPlayer.playVideo === "function") {
+    ytPlayer.playVideo();
   }
 }
 
-INTERACTION_EVENTS.forEach((eventName) => {
-  window.addEventListener(eventName, startMusic, { passive: true });
+function removeAllTriggers() {
+  STRONG_EVENTS.forEach((eventName) => window.removeEventListener(eventName, handleStrongInteraction));
+  WEAK_EVENTS.forEach((eventName) => window.removeEventListener(eventName, handleWeakInteraction));
+}
+
+function handleStrongInteraction() {
+  retryPlay();
+  STRONG_EVENTS.forEach((eventName) => window.removeEventListener(eventName, handleStrongInteraction));
+}
+
+function handleWeakInteraction() {
+  const now = Date.now();
+  if (now - lastWeakAttempt < WEAK_RETRY_THROTTLE_MS) return;
+  lastWeakAttempt = now;
+  retryPlay();
+}
+
+STRONG_EVENTS.forEach((eventName) => {
+  window.addEventListener(eventName, handleStrongInteraction, { passive: true });
+});
+WEAK_EVENTS.forEach((eventName) => {
+  window.addEventListener(eventName, handleWeakInteraction, { passive: true });
 });
 
 // Nút tạm dừng/tiếp tục: lần bấm đầu tiên (nếu là tương tác đầu tiên trên
 // trang) sẽ tự khởi động nhạc như bình thường; các lần bấm sau đó chỉ
 // toggle play/pause của player đã tồn tại.
 musicToggleBtn.addEventListener("click", () => {
-  if (!musicStarted) {
-    startMusic();
+  if (!playerCreated) {
+    retryPlay();
     return;
   }
   if (!ytPlayer || typeof ytPlayer.playVideo !== "function") return;
