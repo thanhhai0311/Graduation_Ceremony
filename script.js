@@ -59,12 +59,23 @@ const INTERACTION_EVENTS = [
   "keydown",
 ];
 
+const musicToggleBtn = document.getElementById("music-toggle");
+
+let ytPlayer = null;
 let apiReady = false;
 let musicStarted = false;
 let pendingStart = false;
+let isPlaying = false;
+
+function setPlayingUI(playing) {
+  isPlaying = playing;
+  musicToggleBtn.classList.toggle("playing", playing);
+  musicToggleBtn.setAttribute("aria-pressed", String(playing));
+  musicToggleBtn.setAttribute("aria-label", playing ? "Tạm dừng nhạc nền" : "Phát nhạc nền");
+}
 
 function createPlayer() {
-  new YT.Player("yt-player", {
+  ytPlayer = new YT.Player("yt-player", {
     height: "0",
     width: "0",
     videoId: MUSIC_VIDEO_ID,
@@ -78,6 +89,12 @@ function createPlayer() {
     },
     events: {
       onReady: (event) => event.target.playVideo(),
+      onStateChange: (event) => {
+        if (event.data === YT.PlayerState.PLAYING) setPlayingUI(true);
+        else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+          setPlayingUI(false);
+        }
+      },
       onError: (event) => {
         console.error("Không phát được nhạc nền, mã lỗi YouTube:", event.data);
       },
@@ -110,4 +127,21 @@ function startMusic() {
 
 INTERACTION_EVENTS.forEach((eventName) => {
   window.addEventListener(eventName, startMusic, { passive: true });
+});
+
+// Nút tạm dừng/tiếp tục: lần bấm đầu tiên (nếu là tương tác đầu tiên trên
+// trang) sẽ tự khởi động nhạc như bình thường; các lần bấm sau đó chỉ
+// toggle play/pause của player đã tồn tại.
+musicToggleBtn.addEventListener("click", () => {
+  if (!musicStarted) {
+    startMusic();
+    return;
+  }
+  if (!ytPlayer || typeof ytPlayer.playVideo !== "function") return;
+
+  if (isPlaying) {
+    ytPlayer.pauseVideo();
+  } else {
+    ytPlayer.playVideo();
+  }
 });

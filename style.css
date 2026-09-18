@@ -272,7 +272,7 @@ section + section {
   font-size: 0.85rem;
 }
 
-/* --- Music player (invisible, autoplay) --- */
+/* --- Music player --- */
 .yt-player-hidden {
   position: absolute;
   width: 1px;
@@ -280,6 +280,52 @@ section + section {
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
+}
+
+.music-toggle {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 10;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  background: var(--navy-deep);
+  color: var(--gold);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+  animation: pulse-invite 2.4s ease-in-out infinite;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.55;
+}
+
+.music-toggle:hover {
+  border-color: var(--gold);
+  opacity: 0.85;
+}
+
+.music-toggle.playing {
+  animation: none;
+  opacity: 1;
+}
+
+.music-toggle.playing .music-icon {
+  animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-invite {
+  0%, 100% { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 0 0 rgba(212, 175, 55, 0.4); }
+  50% { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 0 8px rgba(212, 175, 55, 0); }
 }
 
 @media (max-width: 420px) {
