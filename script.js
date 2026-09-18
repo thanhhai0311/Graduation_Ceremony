@@ -46,8 +46,19 @@ const timer = setInterval(updateCountdown, 1000);
 // trang, rồi tự bật tiếng ngay khi người dùng có tương tác đầu tiên
 // (chạm/cuộn/click bất kỳ đâu) — với thiệp mời, việc này gần như tức thì.
 const MUSIC_VIDEO_ID = "OWFBxcY9_SY";
+const INTERACTION_EVENTS = ["click", "touchstart", "keydown", "scroll"];
+
 let ytPlayer = null;
+let playerReady = false;
+let userInteracted = false;
 let hasUnmuted = false;
+
+function tryUnmute() {
+  if (hasUnmuted || !playerReady || !userInteracted) return;
+  ytPlayer.unMute();
+  ytPlayer.playVideo();
+  hasUnmuted = true;
+}
 
 function onYouTubeIframeAPIReady() {
   ytPlayer = new YT.Player("yt-player", {
@@ -60,24 +71,32 @@ function onYouTubeIframeAPIReady() {
       controls: 0,
       loop: 1,
       playlist: MUSIC_VIDEO_ID,
+      playsinline: 1,
     },
     events: {
       onReady: (event) => {
+        playerReady = true;
         event.target.playVideo();
+        // Người dùng có thể đã tương tác trước khi player load xong
+        tryUnmute();
+      },
+      onError: (event) => {
+        console.error("Không phát được nhạc nền, mã lỗi YouTube:", event.data);
       },
     },
   });
 }
-// YouTube IFrame API calls this global function once loaded
+// YouTube IFrame API gọi hàm global này ngay khi script iframe_api tải xong
 window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
 
-function unmuteMusic() {
-  if (hasUnmuted || !ytPlayer || typeof ytPlayer.unMute !== "function") return;
-  ytPlayer.unMute();
-  ytPlayer.playVideo();
-  hasUnmuted = true;
+function handleFirstInteraction() {
+  userInteracted = true;
+  tryUnmute();
+  INTERACTION_EVENTS.forEach((eventName) => {
+    window.removeEventListener(eventName, handleFirstInteraction);
+  });
 }
 
-["click", "touchstart", "keydown", "scroll"].forEach((eventName) => {
-  window.addEventListener(eventName, unmuteMusic, { once: true, passive: true });
+INTERACTION_EVENTS.forEach((eventName) => {
+  window.addEventListener(eventName, handleFirstInteraction, { passive: true });
 });
