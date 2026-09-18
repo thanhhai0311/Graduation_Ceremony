@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Thiệp Mời Lễ Tốt Nghiệp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Nền hiệu ứng -->
+  <div class="bg-decor" aria-hidden="true">
+    <span class="cap">🎓</span>
+    <span class="cap">🎓</span>
+    <span class="cap">🎓</span>
+    <span class="star">✦</span>
+    <span class="star">✦</span>
+    <span class="star">✦</span>
+  </div>
+
+  <main class="card">
+
+    <!-- HERO -->
+    <section class="hero">
+      <p class="eyebrow">Save the date</p>
+      <h1 class="title">Lễ Tốt Nghiệp<br /><span>2026</span></h1>
+      <p class="subtitle">
+        Trân trọng kính mời bạn đến chung vui và chia sẻ khoảnh khắc
+        đáng nhớ nhất trong hành trình sinh viên của tôi
+      </p>
+      <div class="divider"><span>🎓</span></div>
+      <p class="grad-name">Editable: <strong>[Tên của bạn]</strong></p>
+      <p class="grad-major">Học viện Công nghệ Bưu chính Viễn thông (PTIT)</p>
+    </section>
+
+    <!-- COUNTDOWN -->
+    <section class="countdown-section">
+      <h2 class="section-title">Đếm ngược đến ngày trọng đại</h2>
+      <div id="countdown" class="countdown">
+        <div class="time-box">
+          <span id="days">00</span>
+          <small>Ngày</small>
+        </div>
+        <div class="time-box">
+          <span id="hours">00</span>
+          <small>Giờ</small>
+        </div>
+        <div class="time-box">
+          <span id="minutes">00</span>
+          <small>Phút</small>
+        </div>
+        <div class="time-box">
+          <span id="seconds">00</span>
+          <small>Giây</small>
+        </div>
+      </div>
+      <p id="countdown-message" class="countdown-message"></p>
+    </section>
+
+    <!-- EVENT DETAILS -->
+    <section class="details">
+      <h2 class="section-title">Thông tin buổi lễ</h2>
+      <ul class="details-list">
+        <li>
+          <span class="icon">📅</span>
+          <div>
+            <strong>Thời gian</strong>
+            <p>15:00, Thứ Bảy, ngày 26 tháng 09 năm 2026</p>
+          </div>
+        </li>
+        <li>
+          <span class="icon">📍</span>
+          <div>
+            <strong>Địa điểm</strong>
+            <p>Học viện Công nghệ Bưu chính Viễn thông (PTIT)<br />
+              Km10, Đường Nguyễn Trãi, Hà Đông, Hà Nội</p>
+          </div>
+        </li>
+        <li>
+          <span class="icon">👔</span>
+          <div>
+            <strong>Trang phục</strong>
+            <p>Lịch sự, trang trọng — rất mong sự hiện diện của bạn</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- MAP -->
+    <section class="map-section">
+      <h2 class="section-title">Bản đồ chỉ đường</h2>
+      <div class="map-wrapper">
+        <iframe
+          title="Bản đồ Học viện Công nghệ Bưu chính Viễn thông"
+          src="https://www.google.com/maps?q=H%E1%BB%8Dc+vi%E1%BB%87n+C%C3%B4ng+ngh%E1%BB%87+B%C6%B0u+ch%C3%ADnh+Vi%E1%BB%85n+th%C3%B4ng,+H%C3%A0+%C4%90%C3%B4ng,+H%C3%A0+N%E1%BB%99i&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+      <a
+        class="map-link"
+        href="https://www.google.com/maps/search/?api=1&query=H%E1%BB%8Dc+vi%E1%BB%87n+C%C3%B4ng+ngh%E1%BB%87+B%C6%B0u+ch%C3%ADnh+Vi%E1%BB%85n+th%C3%B4ng+H%C3%A0+%C4%90%C3%B4ng+H%C3%A0+N%E1%BB%99i"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Mở trong Google Maps ↗
+      </a>
+    </section>
+
+    <!-- MESSAGE -->
+    <section class="message">
+      <p>
+        "Bốn năm đại học không chỉ là những trang giáo trình, mà còn là
+        hành trình trưởng thành, những người bạn đồng hành và những kỷ niệm
+        không thể nào quên. Rất mong được đón tiếp bạn trong ngày vui này."
+      </p>
+    </section>
+
+    <footer class="footer">
+      <p>Với tất cả lòng biết ơn và niềm vui 🎓</p>
+    </footer>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
