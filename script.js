@@ -173,3 +173,18 @@ musicToggleBtn.addEventListener("click", () => {
     ytPlayer.playVideo();
   }
 });
+
+// --- Link Messenger: mobile mở app Messenger, desktop mở thẳng hộp thoại
+// nhắn tin trên facebook.com ---
+// m.me/<username> được thiết kế để mở app Messenger trên điện thoại (tự
+// fallback sang web nếu chưa cài app), nhưng trên desktop nó chỉ hiện màn
+// hình trung gian yêu cầu "tiếp tục trên messenger.com" thay vì mở thẳng
+// hộp thoại — nên desktop dùng link facebook.com/messages/t/ thay thế.
+const MESSENGER_USERNAME = "thanh.hai.497457";
+const messengerLink = document.getElementById("messenger-link");
+if (messengerLink) {
+  const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+  messengerLink.href = isMobileDevice
+    ? `https://m.me/${MESSENGER_USERNAME}`
+    : `https://www.facebook.com/messages/t/${MESSENGER_USERNAME}`;
+}
