@@ -14,9 +14,18 @@
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+  /* Nền dự phòng cho phần viewport vượt ra ngoài <body> trên mobile
+     (overscroll/rubber-band iOS, hoặc 100vh tính sai khi thanh địa chỉ
+     ẩn/hiện) — nếu không có, phần đó lộ nền trắng mặc định của trình duyệt. */
+  background: var(--navy-deep);
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: var(--font-body);
   background: radial-gradient(circle at 20% 10%, #142a52 0%, var(--navy) 45%, var(--navy-deep) 100%);
   color: var(--cream);
